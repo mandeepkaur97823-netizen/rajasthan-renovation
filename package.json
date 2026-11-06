@@ -1,0 +1,16 @@
+{
+  "name": "rajasthan-renovation-project-workspace",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Rajasthan Renovation and Landscaping Services - Localhost Workspace",
+  "scripts": {
+    "dev": "npm --prefix rajasthan-renovation-and-landscaping-services run dev",
+    "build": "npm --prefix rajasthan-renovation-and-landscaping-services run build",
+    "start": "npm --prefix rajasthan-renovation-and-landscaping-services run start",
+    "serve": "npm --prefix rajasthan-renovation-and-landscaping-services run serve",
+    "preview": "npm --prefix rajasthan-renovation-and-landscaping-services run preview",
+    "lint": "npm --prefix rajasthan-renovation-and-landscaping-services run lint",
+    "install:all": "npm --prefix rajasthan-renovation-and-landscaping-services install"
+  }
+}
+

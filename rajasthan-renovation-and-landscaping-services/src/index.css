@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+:root {
+  --color-forest: #103F2B;
+  --color-natural: #245C3A;
+  --color-lime: #B8DC61;
+  --color-ivory: #F5F3EB;
+  --color-white: #FFFFFF;
+  --color-charcoal: #242824;
+}
+
+@layer base {
+  html {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    scroll-behavior: smooth;
+    color: #242824;
+    background-color: #F5F3EB;
+  }
+  
+  ::selection {
+    background-color: #B8DC61;
+    color: #103F2B;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom subtle luxury shadows */
+.shadow-luxury {
+  box-shadow: 0 10px 30px -10px rgba(16, 63, 43, 0.08), 0 4px 6px -2px rgba(16, 63, 43, 0.03);
+}
+
+.shadow-luxury-hover {
+  box-shadow: 0 20px 40px -15px rgba(16, 63, 43, 0.14), 0 8px 12px -3px rgba(16, 63, 43, 0.05);
+}
