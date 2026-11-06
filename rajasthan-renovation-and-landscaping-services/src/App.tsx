@@ -16,9 +16,15 @@ import { MaintenanceMode } from './components/MaintenanceMode';
 
 export default function App() {
   const [selectedServiceForQuote, setSelectedServiceForQuote] = useState<string>('');
-  const [isAdminView, setIsAdminView] = useState<boolean>(() => {
-    return typeof window !== 'undefined' && window.location.hash === '#admin';
-  });
+
+  const checkIsAdmin = (): boolean => {
+    if (typeof window === 'undefined') return false;
+    const path = window.location.pathname.toLowerCase().replace(/\/$/, '');
+    const hash = window.location.hash.toLowerCase();
+    return hash === '#admin' || path === '/admin' || path.endsWith('/admin');
+  };
+
+  const [isAdminView, setIsAdminView] = useState<boolean>(checkIsAdmin);
   const [siteStatus, setSiteStatus] = useState<'online' | 'offline'>(() => {
     try {
       const saved = localStorage.getItem('raj_site_status');
@@ -29,11 +35,15 @@ export default function App() {
   });
 
   useEffect(() => {
-    const handleHashChange = () => {
-      setIsAdminView(window.location.hash === '#admin');
+    const handleRouteCheck = () => {
+      setIsAdminView(checkIsAdmin());
     };
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    window.addEventListener('hashchange', handleRouteCheck);
+    window.addEventListener('popstate', handleRouteCheck);
+    return () => {
+      window.removeEventListener('hashchange', handleRouteCheck);
+      window.removeEventListener('popstate', handleRouteCheck);
+    };
   }, []);
 
   const handleSelectService = (serviceTitle: string) => {
@@ -41,13 +51,19 @@ export default function App() {
   };
 
   const handleOpenAdmin = () => {
+    try {
+      window.history.pushState(null, '', '/admin');
+    } catch {}
     window.location.hash = '#admin';
     setIsAdminView(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleBackToSite = () => {
-    window.location.hash = '#home';
+    try {
+      window.history.pushState(null, '', '/');
+    } catch {}
+    window.location.hash = '';
     setIsAdminView(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
