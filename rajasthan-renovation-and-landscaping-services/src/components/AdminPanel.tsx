@@ -249,7 +249,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       setLoginError('');
       loadData();
     } else {
-      setLoginError('Incorrect password! Please enter password 12345678.');
+      setLoginError('Incorrect password! Please try again.');
     }
   };
 
@@ -413,9 +413,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              <p className="text-[11px] text-stone-500 mt-1.5">
-                Default Access Password: <span className="font-mono text-stone-400">12345678</span>
-              </p>
             </div>
 
             {loginError && (

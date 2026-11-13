@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Phone, Menu, X, Home, Facebook, Lock } from 'lucide-react';
+import { Phone, Menu, X, Home, Facebook } from 'lucide-react';
 import { business } from '../config/business';
 
 export interface NavbarProps {
@@ -96,17 +96,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAdmin }) => {
               </a>
             )}
 
-            {/* Admin Portal Shortcut */}
-            <button
-              type="button"
-              onClick={onOpenAdmin || (() => { window.location.href = '/admin'; })}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-white/10 hover:bg-white/20 text-emerald-200 hover:text-white border border-white/10 text-xs font-bold transition-all cursor-pointer"
-              title="Owner / Admin Portal Access (Password: 12345678)"
-            >
-              <Lock className="w-3.5 h-3.5 text-[#B8DC61]" />
-              <span>Admin</span>
-            </button>
-
             {/* High-Contrast Call Now Button */}
             <a
               href={business.phoneTelLink}
@@ -183,19 +172,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAdmin }) => {
               <WhatsAppIcon className="w-4 h-4" />
               <span>Chat on WhatsApp ({business.whatsappDisplay})</span>
             </a>
-
-            <button
-              type="button"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                if (onOpenAdmin) onOpenAdmin();
-                else window.location.href = '/admin';
-              }}
-              className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-2xl bg-black/40 text-stone-300 hover:text-white border border-stone-700/60 font-semibold text-xs transition-all cursor-pointer"
-            >
-              <Lock className="w-3.5 h-3.5 text-[#B8DC61]" />
-              <span>Admin Portal Login</span>
-            </button>
           </div>
         </div>
       )}

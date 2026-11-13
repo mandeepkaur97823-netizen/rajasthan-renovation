@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Phone, Home, Mail, Facebook, MapPin, Clock, X, ShieldCheck, FileText, Lock } from 'lucide-react';
+import { Phone, Home, Mail, Facebook, MapPin, Clock, X, ShieldCheck, FileText } from 'lucide-react';
 import { SERVICES_DATA, business } from '../config/business';
 import { WhatsAppIcon } from './Navbar';
 
@@ -183,15 +183,6 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin }) => {
             </button>
             <span>·</span>
             <span>Khushkaran ({business.phoneDisplay})</span>
-            <span>·</span>
-            <button
-              type="button"
-              onClick={onOpenAdmin || (() => { window.location.hash = '#admin'; })}
-              className="text-[#B8DC61] hover:text-white transition-colors font-bold inline-flex items-center gap-1 cursor-pointer"
-            >
-              <Lock className="w-3 h-3 text-[#B8DC61]" />
-              <span>Admin Portal</span>
-            </button>
           </div>
         </div>
       </div>
