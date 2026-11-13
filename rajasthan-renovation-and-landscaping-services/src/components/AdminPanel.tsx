@@ -145,6 +145,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [passwordInput, setPasswordInput] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [loginError, setLoginError] = useState<string>('');
+  const [newPassword, setNewPassword] = useState<string>('');
+  const [passwordChangeSuccess, setPasswordChangeSuccess] = useState<string>('');
 
   // Website status state ('online' | 'offline')
   const [siteStatus, setSiteStatus] = useState<'online' | 'offline'>(() => {
@@ -243,13 +245,36 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordInput.trim() === ADMIN_PASSWORD) {
+    let currentPassword = ADMIN_PASSWORD;
+    try {
+      const savedPass = localStorage.getItem('raj_admin_password');
+      if (savedPass) currentPassword = savedPass;
+    } catch {}
+
+    if (passwordInput.trim() === currentPassword) {
       setIsAuthenticated(true);
       sessionStorage.setItem('raj_admin_authenticated', 'true');
       setLoginError('');
       loadData();
     } else {
       setLoginError('Incorrect password! Please try again.');
+    }
+  };
+
+  const handleChangePassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPassword.trim()) return;
+    if (newPassword.trim().length < 6) {
+      alert('Password must be at least 6 characters long.');
+      return;
+    }
+    try {
+      localStorage.setItem('raj_admin_password', newPassword.trim());
+      setPasswordChangeSuccess('Password updated successfully! Keep it safe.');
+      setNewPassword('');
+      setTimeout(() => setPasswordChangeSuccess(''), 4000);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -1279,6 +1304,50 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <span>Save Business Details</span>
                 </button>
               </form>
+              </div>
+
+              {/* Private Admin Password Management */}
+              <div className="bg-white p-7 sm:p-9 rounded-3xl border border-stone-200/90 shadow-sm space-y-6">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Lock className="w-5 h-5 text-[#103F2B]" />
+                    <h3 className="text-xl font-extrabold text-[#103F2B]">Admin Password &amp; Security</h3>
+                  </div>
+                  <p className="text-xs sm:text-sm text-stone-500">
+                    Set your own private password for the admin portal so only you can access leads and inquiries.
+                  </p>
+                </div>
+
+                <form onSubmit={handleChangePassword} className="space-y-5">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-600 mb-1.5">New Admin Password</label>
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Enter new private password..."
+                      required
+                      minLength={6}
+                      className="w-full bg-[#F5F3EB] border border-stone-200 rounded-2xl px-4 py-3 text-sm font-mono font-bold text-[#103F2B] focus:outline-none focus:ring-2 focus:ring-[#103F2B]/30"
+                    />
+                    <p className="text-[11px] text-stone-400 mt-1">Minimum 6 characters. Saved securely in your browser.</p>
+                  </div>
+
+                  {passwordChangeSuccess && (
+                    <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs flex items-center gap-2 animate-fade-in">
+                      <CheckCircle2 className="w-4 h-4 text-[#245C3A]" />
+                      <span>{passwordChangeSuccess}</span>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    className="py-3 px-6 rounded-2xl bg-[#103F2B] hover:bg-[#18533a] text-white font-bold text-xs shadow-md transition-all cursor-pointer flex items-center gap-2"
+                  >
+                    <Lock className="w-3.5 h-3.5 text-[#B8DC61]" />
+                    <span>Update Private Password</span>
+                  </button>
+                </form>
               </div>
             </div>
           )}
