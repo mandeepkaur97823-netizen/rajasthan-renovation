@@ -35,10 +35,12 @@ import {
   MessageSquare,
   Wrench,
   Filter,
-  Power
+  Power,
+  Database
 } from 'lucide-react';
 import { business } from '../config/business';
 import { WhatsAppIcon } from './Navbar';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 const ADMIN_PASSWORD = '12345678';
 
@@ -216,7 +218,39 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     loadData();
   }, []);
 
-  const loadData = () => {
+  const loadData = async () => {
+    // 1. Try loading from Supabase Cloud Database first
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('quotes')
+          .select('*')
+          .order('id', { ascending: false });
+
+        if (!error && Array.isArray(data) && data.length > 0) {
+          const mappedQuotes: StoredQuote[] = data.map((q: any) => ({
+            id: Number(q.id),
+            fullName: q.full_name || 'Customer',
+            phoneNumber: q.phone_number || '',
+            emailAddress: q.email_address || 'Not provided',
+            serviceRequired: q.service_required || 'General Enquiry',
+            suburbPostcode: q.suburb_postcode || '',
+            projectDescription: q.project_description || '',
+            date: q.created_at || new Date().toISOString(),
+            status: (q.status as StoredQuote['status']) || 'New'
+          }));
+          setQuotes(mappedQuotes);
+          try {
+            localStorage.setItem('raj_quotes', JSON.stringify(mappedQuotes));
+          } catch {}
+          return;
+        }
+      } catch (sbErr) {
+        console.warn('Supabase fetch notice, falling back to local storage:', sbErr);
+      }
+    }
+
+    // 2. Fallback to LocalStorage
     try {
       const storedQuotesStr = localStorage.getItem('raj_quotes');
       if (storedQuotesStr) {
@@ -284,17 +318,37 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setPasswordInput('');
   };
 
-  const handleUpdateStatus = (quoteId: number, newStatus: StoredQuote['status']) => {
+  const handleUpdateStatus = async (quoteId: number, newStatus: StoredQuote['status']) => {
     const updated = quotes.map(q => q.id === quoteId ? { ...q, status: newStatus } : q);
     setQuotes(updated);
-    localStorage.setItem('raj_quotes', JSON.stringify(updated));
+    try {
+      localStorage.setItem('raj_quotes', JSON.stringify(updated));
+    } catch {}
+
+    if (supabase) {
+      try {
+        await supabase.from('quotes').update({ status: newStatus }).eq('id', quoteId);
+      } catch (err) {
+        console.warn('Supabase status update error:', err);
+      }
+    }
   };
 
-  const handleDeleteQuote = (quoteId: number) => {
+  const handleDeleteQuote = async (quoteId: number) => {
     if (window.confirm('Delete this customer lead?')) {
       const updated = quotes.filter(q => q.id !== quoteId);
       setQuotes(updated);
-      localStorage.setItem('raj_quotes', JSON.stringify(updated));
+      try {
+        localStorage.setItem('raj_quotes', JSON.stringify(updated));
+      } catch {}
+
+      if (supabase) {
+        try {
+          await supabase.from('quotes').delete().eq('id', quoteId);
+        } catch (err) {
+          console.warn('Supabase delete error:', err);
+        }
+      }
     }
   };
 
@@ -522,6 +576,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               <Power className="w-3.5 h-3.5" />
               <span>{siteStatus === 'online' ? 'Turn Site OFF' : 'Turn Site ON'}</span>
             </button>
+
+            {/* Database Sync Status Badge */}
+            <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[10px]">
+              <span className="text-stone-400 font-medium">Database:</span>
+              <span className={`inline-flex items-center gap-1 font-bold ${isSupabaseConfigured ? 'text-[#B8DC61]' : 'text-amber-400'}`}>
+                <Database className="w-3 h-3" />
+                <span>{isSupabaseConfigured ? 'Supabase Connected' : 'Local Storage'}</span>
+              </span>
+            </div>
           </div>
 
           {/* Navigation Menu */}
@@ -1348,6 +1411,44 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <span>Update Private Password</span>
                   </button>
                 </form>
+              </div>
+
+              {/* Supabase Cloud Database Connection Card */}
+              <div className="bg-white p-7 sm:p-9 rounded-3xl border border-stone-200/90 shadow-sm space-y-6">
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Database className="w-5 h-5 text-[#103F2B]" />
+                      <h3 className="text-xl font-extrabold text-[#103F2B]">Cloud Database (Supabase)</h3>
+                    </div>
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+                      isSupabaseConfigured 
+                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' 
+                        : 'bg-amber-100 text-amber-800 border border-amber-300'
+                    }`}>
+                      <span className={`w-2 h-2 rounded-full ${isSupabaseConfigured ? 'bg-emerald-600' : 'bg-amber-500'}`} />
+                      {isSupabaseConfigured ? 'Connected & Active' : 'Not Connected (Local Mode)'}
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-stone-500">
+                    Connect your free Supabase database to automatically sync quotes and enquiries from all visitors across all mobile and desktop devices.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-3 text-xs text-stone-700">
+                  <div className="font-bold text-stone-900">How to connect Supabase:</div>
+                  <ol className="list-decimal list-inside space-y-1.5 text-stone-600">
+                    <li>Create a free project at <span className="font-semibold text-[#103F2B]">supabase.com</span></li>
+                    <li>Go to Project Settings &gt; API to get your <span className="font-mono bg-white px-1.5 py-0.5 rounded border">Project URL</span> and <span className="font-mono bg-white px-1.5 py-0.5 rounded border">anon public key</span></li>
+                    <li>Add them to your project's environment variables or Vercel Environment Variables:
+                      <div className="mt-1 font-mono text-[11px] bg-stone-900 text-emerald-300 p-2.5 rounded-xl">
+                        VITE_SUPABASE_URL=your_project_url<br />
+                        VITE_SUPABASE_ANON_KEY=your_anon_key
+                      </div>
+                    </li>
+                    <li>Run the ready SQL script in <span className="font-semibold">supabase-schema.sql</span> in your Supabase SQL Editor to create the <span className="font-mono">quotes</span> table.</li>
+                  </ol>
+                </div>
               </div>
             </div>
           )}

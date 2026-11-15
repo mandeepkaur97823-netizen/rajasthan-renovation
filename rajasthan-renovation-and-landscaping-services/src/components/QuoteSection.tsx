@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Phone, Check, Mail, Send, Sparkles, MapPin, Clock, Upload, ShieldCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { SERVICES_DATA, business } from '../config/business';
 import { WhatsAppIcon } from './Navbar';
+import { supabase } from '../lib/supabase';
 
 interface QuoteSectionProps {
   preselectedService?: string;
@@ -242,8 +243,29 @@ Project Details: ${projectDescription || 'Please contact me to discuss my proper
 
     const formattedPhone = phoneValid.formatted || phoneNumber.trim();
 
-    // Save accurate, verified enquiry to local storage and prepare instant confirmation
-    setTimeout(() => {
+    // Save accurate, verified enquiry to Supabase cloud and local storage
+    (async () => {
+      try {
+        if (supabase) {
+          const { error: sbError } = await supabase.from('quotes').insert([
+            {
+              full_name: fullName.trim(),
+              phone_number: formattedPhone,
+              email_address: emailAddress.trim() || null,
+              service_required: serviceRequired,
+              suburb_postcode: suburbPostcode.trim(),
+              project_description: projectDescription.trim(),
+              status: 'New'
+            }
+          ]);
+          if (sbError) {
+            console.warn('Supabase insert notice:', sbError.message);
+          }
+        }
+      } catch (sbErr) {
+        console.warn('Supabase sync skipped:', sbErr);
+      }
+
       try {
         const storedQuotes = JSON.parse(localStorage.getItem('raj_quotes') || '[]');
         storedQuotes.unshift({
@@ -264,7 +286,7 @@ Project Details: ${projectDescription || 'Please contact me to discuss my proper
 
       setIsSubmitting(false);
       setIsSubmitted(true);
-    }, 500);
+    })();
   };
 
   return (
