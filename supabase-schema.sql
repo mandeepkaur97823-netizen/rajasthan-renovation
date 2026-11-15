@@ -42,3 +42,4 @@ CREATE POLICY "Allow deleting quotes" ON public.quotes
   FOR DELETE
   TO anon, authenticated
   USING (true);
+

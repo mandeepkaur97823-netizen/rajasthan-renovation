@@ -149,6 +149,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [loginError, setLoginError] = useState<string>('');
   const [newPassword, setNewPassword] = useState<string>('');
   const [passwordChangeSuccess, setPasswordChangeSuccess] = useState<string>('');
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
   // Website status state ('online' | 'offline')
   const [siteStatus, setSiteStatus] = useState<'online' | 'offline'>(() => {
@@ -276,6 +277,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       setReviews(DEFAULT_REVIEWS);
     }
   };
+
+  // Auto-refresh leads from Supabase every 15 seconds while logged into admin panel
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const interval = setInterval(() => {
+      loadData();
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -750,6 +760,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             >
               <Download className="w-3.5 h-3.5 text-[#B8DC61]" />
               <span className="hidden sm:inline">Export CSV</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={async () => {
+                setIsRefreshing(true);
+                await loadData();
+                setTimeout(() => setIsRefreshing(false), 500);
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-[#103F2B] text-xs font-bold transition-all cursor-pointer"
+              title="Refresh leads from Supabase"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-[#103F2B] ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Sync Cloud</span>
             </button>
 
             <button
