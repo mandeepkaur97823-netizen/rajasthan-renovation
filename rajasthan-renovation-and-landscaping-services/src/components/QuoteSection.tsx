@@ -284,6 +284,42 @@ Project Details: ${projectDescription || 'Please contact me to discuss my proper
         // Fallback gracefully
       }
 
+      // Dispatch instant email notification to business owner
+      try {
+        let recipientEmail = business.email || 'khush_99@outlook.com';
+        try {
+          const custom = localStorage.getItem('raj_custom_settings');
+          if (custom) {
+            const parsed = JSON.parse(custom);
+            if (parsed.email) recipientEmail = parsed.email;
+          }
+        } catch {}
+
+        if (recipientEmail) {
+          await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(recipientEmail)}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+              _subject: `New Customer Quote: ${fullName.trim()} (${serviceRequired})`,
+              _template: 'table',
+              _captcha: 'false',
+              'Customer Name': fullName.trim(),
+              'Phone Number': formattedPhone,
+              'Customer Email': emailAddress.trim() || 'Not provided',
+              'Service Required': serviceRequired,
+              'Suburb / Postcode': suburbPostcode.trim(),
+              'Project Details': projectDescription.trim(),
+              'Received At': new Date().toLocaleString()
+            })
+          });
+        }
+      } catch (mailErr) {
+        console.warn('Email notification notice:', mailErr);
+      }
+
       setIsSubmitting(false);
       setIsSubmitted(true);
     })();

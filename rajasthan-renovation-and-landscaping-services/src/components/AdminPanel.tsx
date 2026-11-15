@@ -1363,6 +1363,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     required
                     className="w-full bg-[#F5F3EB] border border-stone-200 rounded-2xl px-4 py-3 text-sm text-[#103F2B] focus:outline-none focus:ring-2 focus:ring-[#103F2B]/30"
                   />
+                  <p className="text-[11px] text-stone-400 mt-1">Quotes submitted by customers are automatically delivered to this email address in real time.</p>
                 </div>
 
                 <div>
